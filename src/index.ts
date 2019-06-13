@@ -1,4 +1,13 @@
+/**
+ * @author Robin Sun
+ * @email robin@naturewake.com
+ * @create date 2019-05-08 15:53:04
+ * @modify date 2019-06-13 15:53:04
+ * @desc common utilities for sardines.js project
+ */
 import * as nodeUtil from 'util'
+import * as proc from 'process'
+
 export * from './http_interfaces'
 // 2019-05-08
 export const debugLog = nodeUtil.debuglog('sardines')
@@ -162,18 +171,49 @@ export class Factory {
 interface UnifiedErrorMessage {
     error: any
     type: string
+    subType: string
 }
-export const unifyErrMesg = (err: any, type: string = 'unknown'): UnifiedErrorMessage => {
+export const unifyErrMesg = (err: any, type: string = 'unknown', subType: string = 'unknown'): UnifiedErrorMessage => {
     if (typeof err === 'object') {
         if (!err.error) {
-            return { error: err, type }
+            return { error: err, type, subType }
         }
-        return Object.assign({ type }, err)
+        return Object.assign({ type, subType }, err)
     }
-    return { error: err, type }
+    return { error: err, type, subType }
 }
 
 // 2019-05-09
-export const inspect = (obj: any) => nodeUtil.inspect(obj, { depth: null, colors: true })
-export const inspectedLog = (obj: any) => console.log(inspect(obj))
-export const inspectedDebugLog = (errMsg: string, obj: any) => debugLog(errMsg + ':\n' + inspect(obj))
+export const inspect = (obj: any) => nodeUtil.inspect(obj, { depth: null, colors: false })
+export const colorfulInspect = (obj: any) => nodeUtil.inspect(obj, { depth: null, colors: true })
+export const inspectedLog = (obj: any) => console.log(colorfulInspect(obj))
+export const inspectedDebugLog = (errMsg: string, obj: any) => debugLog(errMsg + ':\n' + colorfulInspect(obj))
+
+// 2019-05-14
+export const logo = 'sardines'
+
+// 2019-06-13
+export const parseArgs = () => {
+    // Parse the arguments
+    const params: { [key: string]: any } = {}
+    const files: string[] = []
+
+    for (let i = 2; i < proc.argv.length; i++) {
+        const item = proc.argv[i];
+        if (item[0] === '-') {
+            // is an argument
+            const keyAndValue = item.replace(/^-+/, '').split('=')
+            if (keyAndValue.length === 1) {
+                // boolean type argument
+                params[keyAndValue[0]] = true
+            } else if (keyAndValue.length === 2) {
+                keyAndValue.shift()
+                params[keyAndValue[0]] = (keyAndValue).join('=')
+            }
+        } else {
+            // is a file path
+            files.push(item)
+        }
+    }
+    return {params, files}
+}
