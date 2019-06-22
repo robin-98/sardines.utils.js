@@ -1,8 +1,16 @@
+/**
+ * @author Robin Sun
+ * @email robin@naturewake.com
+ * @create date 2019-06-15 16:41:16
+ * @modify date 2019-06-15 16:41:16
+ * @desc [description]
+ */
 export namespace Http {
     export enum Protocol {
         HTTP = 'http',
         HTTPS = 'https',
-        HTTP2 = 'http2'
+        HTTP2 = 'http2',
+        HTTP3 = 'http3'
     }
 
     export interface ServiceProviderPublicInfo {
@@ -25,7 +33,10 @@ export namespace Http {
     }
     
     export enum ServiceInputParamType {
-        object = 'object'
+        object = 'object',
+        string = 'string',
+        number = 'number',
+        boolean = 'boolean'
     }
     
     export enum Method {
@@ -44,9 +55,11 @@ export namespace Http {
         html = 'html',
         render = 'render',
         handler = 'handler',
-        JSON = 'json',
+        json = 'json',
         text = 'text',
-        string = 'string'
+        string = 'string',
+        number = 'number',
+        boolean = 'boolean'
     }
     
     // Interfaces for the service settings 

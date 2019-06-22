@@ -9,6 +9,7 @@ import * as nodeUtil from 'util'
 import * as proc from 'process'
 
 export * from './http_interfaces'
+export * from './sardines_interfaces'
 // 2019-05-08
 export const debugLog = nodeUtil.debuglog('sardines')
 
@@ -111,11 +112,11 @@ export class Factory {
         return category.get(name)
     }
 
-    static getInstance(CustomClass: any, settings: object, type: string = 'unknown'): object|null {
+    static getInstance(CustomClass: any, settings: object, type: string = 'unknown'): any {
         if (!CustomClass) return null
 
         // Search by parameters
-        let instance: object|null = null
+        let instance: any = null
 
         let memcache = this.instances.get(type)
         if (memcache) {
@@ -197,7 +198,6 @@ export const parseArgs = () => {
     // Parse the arguments
     const params: { [key: string]: any } = {}
     const files: string[] = []
-
     for (let i = 2; i < proc.argv.length; i++) {
         const item = proc.argv[i];
         if (item[0] === '-') {
@@ -207,8 +207,9 @@ export const parseArgs = () => {
                 // boolean type argument
                 params[keyAndValue[0]] = true
             } else if (keyAndValue.length === 2) {
+                const key = keyAndValue[0]
                 keyAndValue.shift()
-                params[keyAndValue[0]] = (keyAndValue).join('=')
+                params[key] = (keyAndValue).join('=')
             }
         } else {
             // is a file path
