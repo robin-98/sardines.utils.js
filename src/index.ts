@@ -173,15 +173,28 @@ interface UnifiedErrorMessage {
     error: any
     type: string
     subType: string
+    [key: string]: any
 }
 export const unifyErrMesg = (err: any, type: string = 'unknown', subType: string = 'unknown'): UnifiedErrorMessage => {
+    let result = err
     if (typeof err === 'object') {
-        if (!err.error) {
-            return { error: err, type, subType }
+        if (err.error === undefined) {
+            if (err.message) {
+                if (proc.env.NODE_ENV && ['prod', 'production'].indexOf(proc.env.NODE_ENV.toLowerCase()) >=0) {
+                    result = { error: err.message, type, subType }
+                } else {
+                    result = Object.assign({}, err, { error: err.message, type, subType })
+                }
+            } else {
+                result = { error: err, type, subType }
+            }
+        } else {
+            result = Object.assign({ type, subType }, err)
         }
-        return Object.assign({ type, subType }, err)
+    } else {
+        result = { error: err, type, subType }
     }
-    return { error: err, type, subType }
+    return result
 }
 
 // 2019-05-09
@@ -217,4 +230,27 @@ export const parseArgs = () => {
         }
     }
     return {params, files}
+}
+
+// 2019-06-25
+export const unifyAsyncHandler = (type: string, subType: string, handler:any, thisObj:any = null, msg:string = '') => {
+    return async (...params: any[]) => {
+        try {
+            if (thisObj) {
+                return await handler.apply(thisObj, params)
+            } else return await handler(...params)
+        } catch (e) {
+            let err = unifyErrMesg(e, type, subType)
+            if (proc.env.NODE_ENV && ['prod', 'production'].indexOf(proc.env.NODE_ENV.toLowerCase()) >=0) {
+                err.error = msg
+            } else if (msg && err) {
+                if (typeof err.error === 'string') {
+                    err.error = `${msg}: ${err.error}`
+                } else if (!err.error) {
+                    err.error = msg
+                }
+            }
+            throw err
+        }
+    }
 }
